@@ -1,11 +1,21 @@
+import os
 from pathlib import Path
 
+import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-e1b73270na!plxmrek0nck22-2dslmem=ddbe0bb2%po&2ze-#'
-DEBUG = True
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"]
+# Read from the environment on Vercel; falls back to a dev-only key locally
+SECRET_KEY = os.environ.get(
+    "SECRET_KEY",
+    "dev-only-key-do-not-use-in-production",
+)
+
+# True on your PC, False on Vercel (set DEBUG=False in Vercel's environment variables)
+DEBUG = os.environ.get("DEBUG", "True") == "True"
+
+ALLOWED_HOSTS = [".vercel.app", "localhost", "127.0.0.1", "[::1]"]
+CSRF_TRUSTED_ORIGINS = ["https://*.vercel.app"]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -46,11 +56,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'hospital.wsgi.application'
 
+# Uses DATABASE_URL (Postgres) on Vercel, SQLite on your PC
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -64,4 +75,6 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
-STATIC_URL = 'static/'
+
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
