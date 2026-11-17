@@ -1,0 +1,256 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Login | CarePoint Hospital Management</title>
+    <meta
+      content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
+      name="viewport"
+    />
+    <link
+      rel="icon"
+      href="{% static 'assets/img/kaiadmin/favicon.ico' %}"
+      type="image/x-icon"
+    />
+
+    <!-- Fonts and icons -->
+    <script src="{% static 'assets/js/plugin/webfont/webfont.min.js' %}"></script>
+    <script>
+      WebFont.load({
+        google: { families: ["Public Sans:300,400,500,600,700"] },
+        custom: {
+          families: [
+            "Font Awesome 5 Solid",
+            "Font Awesome 5 Regular",
+            "Font Awesome 5 Brands",
+            "simple-line-icons",
+          ],
+          urls: ["{% static 'assets/css/fonts.min.css' %}"],
+        },
+        active: function () {
+          sessionStorage.fonts = true;
+        },
+      });
+    </script>
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/css/plugins.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/css/kaiadmin.min.css' %}" />
+
+    <style>
+      body.login-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #161c2e 0%, #1a2035 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        font-family: "Public Sans", sans-serif;
+      }
+      .auth-container {
+        width: 100%;
+        max-width: 440px;
+      }
+      .auth-card {
+        background: #ffffff;
+        border-radius: 14px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        border: none;
+        overflow: hidden;
+      }
+      .auth-header {
+        background: #161c2e;
+        padding: 2.2rem 2rem 1.8rem;
+        text-align: center;
+        color: #ffffff;
+      }
+      .brand-title {
+        font-size: 1.45rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 0.4rem;
+      }
+      .auth-subtitle {
+        color: #8d9498;
+        font-size: 0.85rem;
+        margin: 0;
+      }
+      .auth-body {
+        padding: 2.2rem 2rem;
+      }
+      .input-group-text {
+        background: #f8fafc;
+        border-color: #ebedf2;
+        color: #8fa0b5;
+      }
+      .form-control {
+        border-color: #ebedf2;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.95rem;
+      }
+      .form-control:focus {
+        border-color: #1572e8;
+        box-shadow: 0 0 0 3px rgba(21, 114, 232, 0.15);
+      }
+      .btn-auth-primary {
+        background: #1572e8;
+        border-color: #1572e8;
+        padding: 0.75rem 1.25rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        box-shadow: 0 4px 14px rgba(21, 114, 232, 0.35);
+        transition: all 0.2s ease;
+      }
+      .btn-auth-primary:hover {
+        background: #0f5ec2;
+        border-color: #0f5ec2;
+        box-shadow: 0 6px 18px rgba(21, 114, 232, 0.45);
+      }
+      .auth-footer-text {
+        text-align: center;
+        font-size: 0.9rem;
+        color: #64748b;
+        margin-top: 1.5rem;
+      }
+      .auth-footer-text a {
+        color: #1572e8;
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .auth-footer-text a:hover {
+        text-decoration: underline;
+      }
+      .hospital-cross {
+        color: #31ce36;
+        font-size: 1.5rem;
+      }
+      .btn-back-home {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #8fa0b5;
+        font-size: 0.85rem;
+        text-decoration: none;
+        margin-bottom: 1rem;
+        transition: color 0.15s;
+      }
+      .btn-back-home:hover {
+        color: #ffffff;
+      }
+    </style>
+  </head>
+  <body class="login-page">
+    <div class="auth-container">
+      <a href="{% url 'HOME' %}" class="btn-back-home">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+      </a>
+
+      <div class="card auth-card">
+        <div class="auth-header">
+          <div class="brand-title">
+            <i class="fas fa-plus-square hospital-cross"></i>
+            <span>CarePoint</span>
+            <span class="badge bg-success ms-1" style="font-size: 9px; letter-spacing: 1px;">HOSPITAL</span>
+          </div>
+          <p class="auth-subtitle">Staff &amp; Healthcare Management Portal</p>
+        </div>
+
+        <div class="auth-body">
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}info{% endif %} alert-dismissible fade show py-2" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            {% if next %}
+              <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+
+            <div class="mb-3">
+              <label class="form-label fw-bold small text-muted">USERNAME</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                {{ form.username }}
+              </div>
+              {% if form.username.errors %}
+                <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label fw-bold small text-muted mb-0">PASSWORD</label>
+                <a href="#" class="small text-muted text-decoration-none" onclick="alert('Please contact your Hospital IT Administrator to reset clinical account credentials.'); return false;">Forgot?</a>
+              </div>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                {{ form.password }}
+                <button class="btn btn-outline-secondary border" type="button" id="togglePassword" style="border-color: #ebedf2;">
+                  <i class="fas fa-eye" id="togglePasswordIcon"></i>
+                </button>
+              </div>
+              {% if form.password.errors %}
+                <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="form-check mb-4">
+              <input class="form-check-input" type="checkbox" id="rememberMe" checked>
+              <label class="form-check-label small text-muted" for="rememberMe">
+                Remember this workstation
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-auth-primary btn-round w-100">
+              <i class="fas fa-sign-in-alt me-1"></i> Sign In to Portal
+            </button>
+          </form>
+
+          <div class="auth-footer-text">
+            Don't have a staff account?
+            <a href="{% url 'signup' %}">Create Account</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Core JS Files -->
+    <script src="{% static 'assets/js/core/jquery-3.7.1.min.js' %}"></script>
+    <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+    <script src="{% static 'assets/js/core/bootstrap.min.js' %}"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const toggleBtn = document.getElementById("togglePassword");
+        const passwordInput = document.querySelector('input[name="password"]');
+        const icon = document.getElementById("togglePasswordIcon");
+
+        if (toggleBtn && passwordInput) {
+          toggleBtn.addEventListener("click", function () {
+            if (passwordInput.type === "password") {
+              passwordInput.type = "text";
+              icon.classList.remove("fa-eye");
+              icon.classList.add("fa-eye-slash");
+            } else {
+              passwordInput.type = "password";
+              icon.classList.remove("fa-eye-slash");
+              icon.classList.add("fa-eye");
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,712 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>{% block title %}CarePoint - Hospital Management Dashboard{% endblock %}</title>
+    <meta
+      content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
+      name="viewport"
+    />
+    <link
+      rel="icon"
+      href="{% static 'assets/img/kaiadmin/favicon.ico' %}"
+      type="image/x-icon"
+    />
+
+    <!-- Fonts and icons -->
+    <script src="{% static 'assets/js/plugin/webfont/webfont.min.js' %}"></script>
+    <script>
+      WebFont.load({
+        google: { families: ["Public Sans:300,400,500,600,700"] },
+        custom: {
+          families: [
+            "Font Awesome 5 Solid",
+            "Font Awesome 5 Regular",
+            "Font Awesome 5 Brands",
+            "simple-line-icons",
+          ],
+          urls: ["{% static 'assets/css/fonts.min.css' %}"],
+        },
+        active: function () {
+          sessionStorage.fonts = true;
+        },
+      });
+    </script>
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="{% static 'assets/css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/css/plugins.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'assets/css/kaiadmin.min.css' %}" />
+
+    <!-- CSS Just for demo purpose, don't include it in your project -->
+    <link rel="stylesheet" href="{% static 'assets/css/demo.css' %}" />
+
+    <style>
+      .navbar-brand-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+      }
+      .brand-hospital-badge {
+        font-size: 10px;
+        letter-spacing: 1px;
+        font-weight: 700;
+        padding: 3px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+      }
+      .table-responsive .table th, 
+      .table-responsive .table td {
+        vertical-align: middle;
+      }
+      .form-field-card label {
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #2a2f5b;
+      }
+    </style>
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body>
+    <div class="wrapper">
+      <!-- Sidebar -->
+      <div class="sidebar" data-background-color="dark">
+        <div class="sidebar-logo">
+          <!-- Logo Header -->
+          <div class="logo-header" data-background-color="dark">
+            <a href="{% url 'HOME' %}" class="logo navbar-brand-wrapper">
+              <span class="fw-bold text-white" style="font-size:1.1rem;letter-spacing:0.5px;">
+                <i class="fas fa-heartbeat text-success me-1"></i>CarePoint
+              </span>
+              <span class="badge bg-success brand-hospital-badge">Hospital</span>
+            </a>
+            <div class="nav-toggle">
+              <button class="btn btn-toggle toggle-sidebar">
+                <i class="gg-menu-right"></i>
+              </button>
+              <button class="btn btn-toggle sidenav-toggler">
+                <i class="gg-menu-left"></i>
+              </button>
+            </div>
+            <button class="topbar-toggler more">
+              <i class="gg-more-vertical-alt"></i>
+            </button>
+          </div>
+          <!-- End Logo Header -->
+        </div>
+        <div class="sidebar-wrapper scrollbar scrollbar-inner">
+          <div class="sidebar-content">
+            <ul class="nav nav-secondary">
+              <!-- Dashboard -->
+              <li class="nav-item {% if not kind %}active{% endif %}">
+                <a href="{% url 'HOME' %}">
+                  <i class="fas fa-home"></i>
+                  <p>Dashboard</p>
+                </a>
+              </li>
+
+              <!-- Clinical Section -->
+              <li class="nav-section">
+                <span class="sidebar-mini-icon">
+                  <i class="fa fa-ellipsis-h"></i>
+                </span>
+                <h4 class="text-section">Clinical Care</h4>
+              </li>
+              <li class="nav-item {% if kind == 'patients' %}active{% endif %}">
+                <a href="{% url 'records' 'patients' %}">
+                  <i class="fas fa-user-injured"></i>
+                  <p>Patients</p>
+                  <span class="badge badge-success">{{ patient_count|default:"" }}</span>
+                </a>
+              </li>
+              <li class="nav-item {% if kind == 'appointments' %}active{% endif %}">
+                <a href="{% url 'records' 'appointments' %}">
+                  <i class="fas fa-calendar-check"></i>
+                  <p>Appointments</p>
+                </a>
+              </li>
+              <li class="nav-item {% if kind == 'admissions' %}active{% endif %}">
+                <a href="{% url 'records' 'admissions' %}">
+                  <i class="fas fa-procedures"></i>
+                  <p>Admissions</p>
+                </a>
+              </li>
+
+              <!-- Facility & Staff Section -->
+              <li class="nav-section">
+                <span class="sidebar-mini-icon">
+                  <i class="fa fa-ellipsis-h"></i>
+                </span>
+                <h4 class="text-section">Facility &amp; Staff</h4>
+              </li>
+              <li class="nav-item {% if kind == 'doctors' %}active{% endif %}">
+                <a href="{% url 'records' 'doctors' %}">
+                  <i class="fas fa-user-md"></i>
+                  <p>Doctors</p>
+                </a>
+              </li>
+              <li class="nav-item {% if kind == 'staff' %}active{% endif %}">
+                <a href="{% url 'records' 'staff' %}">
+                  <i class="fas fa-id-badge"></i>
+                  <p>Staff Directory</p>
+                </a>
+              </li>
+              <li class="nav-item {% if kind == 'wards' or kind == 'beds' %}active submenu{% endif %}">
+                <a data-bs-toggle="collapse" href="#wardsLayouts" class="{% if kind != 'wards' and kind != 'beds' %}collapsed{% endif %}" aria-expanded="{% if kind == 'wards' or kind == 'beds' %}true{% else %}false{% endif %}">
+                  <i class="fas fa-hospital"></i>
+                  <p>Wards &amp; Beds</p>
+                  <span class="caret"></span>
+                </a>
+                <div class="collapse {% if kind == 'wards' or kind == 'beds' %}show{% endif %}" id="wardsLayouts">
+                  <ul class="nav nav-collapse">
+                    <li class="{% if kind == 'wards' %}active{% endif %}">
+                      <a href="{% url 'records' 'wards' %}">
+                        <span class="sub-item">Wards</span>
+                      </a>
+                    </li>
+                    <li class="{% if kind == 'beds' %}active{% endif %}">
+                      <a href="{% url 'records' 'beds' %}">
+                        <span class="sub-item">Beds</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+
+              <!-- Finance Section -->
+              <li class="nav-section">
+                <span class="sidebar-mini-icon">
+                  <i class="fa fa-ellipsis-h"></i>
+                </span>
+                <h4 class="text-section">Billing &amp; Finance</h4>
+              </li>
+              <li class="nav-item {% if kind == 'bills' or kind == 'payments' %}active submenu{% endif %}">
+                <a data-bs-toggle="collapse" href="#financeLayouts" class="{% if kind != 'bills' and kind != 'payments' %}collapsed{% endif %}" aria-expanded="{% if kind == 'bills' or kind == 'payments' %}true{% else %}false{% endif %}">
+                  <i class="fas fa-file-invoice-dollar"></i>
+                  <p>Finance</p>
+                  <span class="caret"></span>
+                </a>
+                <div class="collapse {% if kind == 'bills' or kind == 'payments' %}show{% endif %}" id="financeLayouts">
+                  <ul class="nav nav-collapse">
+                    <li class="{% if kind == 'bills' %}active{% endif %}">
+                      <a href="{% url 'records' 'bills' %}">
+                        <span class="sub-item">Patient Bills</span>
+                      </a>
+                    </li>
+                    <li class="{% if kind == 'payments' %}active{% endif %}">
+                      <a href="{% url 'records' 'payments' %}">
+                        <span class="sub-item">Payments</span>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+
+              <!-- Administration Section -->
+              <li class="nav-section">
+                <span class="sidebar-mini-icon">
+                  <i class="fa fa-ellipsis-h"></i>
+                </span>
+                <h4 class="text-section">Administration</h4>
+              </li>
+              <li class="nav-item">
+                <a href="/admin/" target="_blank">
+                  <i class="fas fa-shield-alt"></i>
+                  <p>Django Admin</p>
+                  <span class="badge badge-secondary">Admin</span>
+                </a>
+              </li>
+
+              <!-- Account Section -->
+              <li class="nav-section">
+                <span class="sidebar-mini-icon">
+                  <i class="fa fa-ellipsis-h"></i>
+                </span>
+                <h4 class="text-section">Account</h4>
+              </li>
+              {% if request.user.is_authenticated %}
+                <li class="nav-item">
+                  <a href="{% url 'logout' %}">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <p>Logout</p>
+                    <span class="badge badge-danger">Exit</span>
+                  </a>
+                </li>
+              {% else %}
+                <li class="nav-item">
+                  <a href="{% url 'login' %}">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <p>Login</p>
+                    <span class="badge badge-primary">Portal</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a href="{% url 'signup' %}">
+                    <i class="fas fa-user-plus"></i>
+                    <p>Register</p>
+                  </a>
+                </li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!-- End Sidebar -->
+
+      <div class="main-panel">
+        <div class="main-header">
+          <div class="main-header-logo">
+            <!-- Logo Header -->
+            <div class="logo-header" data-background-color="dark">
+              <a href="{% url 'HOME' %}" class="logo navbar-brand-wrapper">
+                <span class="fw-bold text-white" style="font-size:1.1rem;letter-spacing:0.5px;">
+                  <i class="fas fa-heartbeat text-success me-1"></i>CarePoint
+                </span>
+                <span class="badge bg-success brand-hospital-badge">Hospital</span>
+              </a>
+              <div class="nav-toggle">
+                <button class="btn btn-toggle toggle-sidebar">
+                  <i class="gg-menu-right"></i>
+                </button>
+                <button class="btn btn-toggle sidenav-toggler">
+                  <i class="gg-menu-left"></i>
+                </button>
+              </div>
+              <button class="topbar-toggler more">
+                <i class="gg-more-vertical-alt"></i>
+              </button>
+            </div>
+            <!-- End Logo Header -->
+          </div>
+          <!-- Navbar Header -->
+          <nav
+            class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom"
+          >
+            <div class="container-fluid">
+              <nav
+                class="navbar navbar-header-left navbar-expand-lg navbar-form nav-search p-0 d-none d-lg-flex"
+              >
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <button type="submit" class="btn btn-search pe-1">
+                      <i class="fa fa-search search-icon"></i>
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search patients, doctors, records..."
+                    class="form-control"
+                  />
+                </div>
+              </nav>
+
+              <ul class="navbar-nav topbar-nav ms-md-auto align-items-center">
+                <li
+                  class="nav-item topbar-icon dropdown hidden-caret d-flex d-lg-none"
+                >
+                  <a
+                    class="nav-link dropdown-toggle"
+                    data-bs-toggle="dropdown"
+                    href="#"
+                    role="button"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                  >
+                    <i class="fa fa-search"></i>
+                  </a>
+                  <ul class="dropdown-menu dropdown-search animated fadeIn">
+                    <form class="navbar-left navbar-form nav-search">
+                      <div class="input-group">
+                        <input
+                          type="text"
+                          placeholder="Search ..."
+                          class="form-control"
+                        />
+                      </div>
+                    </form>
+                  </ul>
+                </li>
+                <li class="nav-item topbar-icon dropdown hidden-caret">
+                  <a
+                    class="nav-link dropdown-toggle"
+                    href="#"
+                    id="messageDropdown"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
+                    <i class="fa fa-envelope"></i>
+                  </a>
+                  <ul
+                    class="dropdown-menu messages-notif-box animated fadeIn"
+                    aria-labelledby="messageDropdown"
+                  >
+                    <li>
+                      <div
+                        class="dropdown-title d-flex justify-content-between align-items-center"
+                      >
+                        Messages
+                        <a href="#" class="small">Mark all as read</a>
+                      </div>
+                    </li>
+                    <li>
+                      <div class="message-notif-scroll scrollbar-outer">
+                        <div class="notif-center">
+                          <a href="#">
+                            <div class="notif-img">
+                              <img
+                                src="{% static 'assets/img/jm_denis.jpg' %}"
+                                alt="Img Profile"
+                              />
+                            </div>
+                            <div class="notif-content">
+                              <span class="subject">Dr. Denis</span>
+                              <span class="block"> Patient triage update ready </span>
+                              <span class="time">5 minutes ago</span>
+                            </div>
+                          </a>
+                          <a href="#">
+                            <div class="notif-img">
+                              <img
+                                src="{% static 'assets/img/chadengle.jpg' %}"
+                                alt="Img Profile"
+                              />
+                            </div>
+                            <div class="notif-content">
+                              <span class="subject">Chief Medical Officer</span>
+                              <span class="block"> Ward 3 beds confirmed open </span>
+                              <span class="time">12 minutes ago</span>
+                            </div>
+                          </a>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <a class="see-all" href="javascript:void(0);"
+                        >See all messages<i class="fa fa-angle-right"></i>
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+                <li class="nav-item topbar-icon dropdown hidden-caret">
+                  <a
+                    class="nav-link dropdown-toggle"
+                    href="#"
+                    id="notifDropdown"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                  >
+                    <i class="fa fa-bell"></i>
+                    <span class="notification">4</span>
+                  </a>
+                  <ul
+                    class="dropdown-menu notif-box animated fadeIn"
+                    aria-labelledby="notifDropdown"
+                  >
+                    <li>
+                      <div class="dropdown-title">
+                        You have 4 new notifications
+                      </div>
+                    </li>
+                    <li>
+                      <div class="notif-scroll scrollbar-outer">
+                        <div class="notif-center">
+                          <a href="#">
+                            <div class="notif-icon notif-primary">
+                              <i class="fa fa-user-plus"></i>
+                            </div>
+                            <div class="notif-content">
+                              <span class="block"> New patient registered </span>
+                              <span class="time">5 minutes ago</span>
+                            </div>
+                          </a>
+                          <a href="#">
+                            <div class="notif-icon notif-success">
+                              <i class="fa fa-comment-medical"></i>
+                            </div>
+                            <div class="notif-content">
+                              <span class="block">
+                                Doctor consultation scheduled
+                              </span>
+                              <span class="time">12 minutes ago</span>
+                            </div>
+                          </a>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <a class="see-all" href="javascript:void(0);"
+                        >See all notifications<i class="fa fa-angle-right"></i>
+                      </a>
+                    </li>
+                  </ul>
+                </li>
+                <li class="nav-item topbar-icon dropdown hidden-caret">
+                  <a
+                    class="nav-link"
+                    data-bs-toggle="dropdown"
+                    href="#"
+                    aria-expanded="false"
+                  >
+                    <i class="fas fa-layer-group"></i>
+                  </a>
+                  <div class="dropdown-menu quick-actions animated fadeIn">
+                    <div class="quick-actions-header">
+                      <span class="title mb-1">Quick Actions</span>
+                      <span class="subtitle op-7">Shortcuts</span>
+                    </div>
+                    <div class="quick-actions-scroll scrollbar-outer">
+                      <div class="quick-actions-items">
+                        <div class="row m-0">
+                          <a class="col-6 col-md-4 p-0" href="{% url 'records' 'appointments' %}">
+                            <div class="quick-actions-item">
+                              <div class="avatar-item bg-danger rounded-circle">
+                                <i class="far fa-calendar-alt"></i>
+                              </div>
+                              <span class="text">Calendar</span>
+                            </div>
+                          </a>
+                          <a class="col-6 col-md-4 p-0" href="{% url 'records' 'patients' %}">
+                            <div class="quick-actions-item">
+                              <div
+                                class="avatar-item bg-warning rounded-circle"
+                              >
+                                <i class="fas fa-user-injured"></i>
+                              </div>
+                              <span class="text">Patients</span>
+                            </div>
+                          </a>
+                          <a class="col-6 col-md-4 p-0" href="{% url 'records' 'doctors' %}">
+                            <div class="quick-actions-item">
+                              <div class="avatar-item bg-info rounded-circle">
+                                <i class="fas fa-user-md"></i>
+                              </div>
+                              <span class="text">Doctors</span>
+                            </div>
+                          </a>
+                          <a class="col-6 col-md-4 p-0" href="{% url 'records' 'wards' %}">
+                            <div class="quick-actions-item">
+                              <div
+                                class="avatar-item bg-success rounded-circle"
+                              >
+                                <i class="fas fa-hospital"></i>
+                              </div>
+                              <span class="text">Wards</span>
+                            </div>
+                          </a>
+                          <a class="col-6 col-md-4 p-0" href="{% url 'records' 'bills' %}">
+                            <div class="quick-actions-item">
+                              <div
+                                class="avatar-item bg-primary rounded-circle"
+                              >
+                                <i class="fas fa-file-invoice-dollar"></i>
+                              </div>
+                              <span class="text">Invoices</span>
+                            </div>
+                          </a>
+                          <a class="col-6 col-md-4 p-0" href="{% url 'records' 'payments' %}">
+                            <div class="quick-actions-item">
+                              <div
+                                class="avatar-item bg-secondary rounded-circle"
+                              >
+                                <i class="fas fa-credit-card"></i>
+                              </div>
+                              <span class="text">Payments</span>
+                            </div>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </li>
+
+                <li class="nav-item topbar-user dropdown hidden-caret">
+                  <a
+                    class="dropdown-toggle profile-pic"
+                    data-bs-toggle="dropdown"
+                    href="#"
+                    aria-expanded="false"
+                  >
+                    <div class="avatar-sm">
+                      <span class="avatar-title rounded-circle bg-primary text-white fw-bold" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:14px;">
+                        {% if request.user.is_authenticated %}{{ request.user.username|slice:":2"|upper }}{% else %}ST{% endif %}
+                      </span>
+                    </div>
+                    <span class="profile-username">
+                      <span class="op-7">Hi,</span>
+                      <span class="fw-bold">{% if request.user.is_authenticated %}{{ request.user.username|capfirst }}{% else %}Staff{% endif %}</span>
+                    </span>
+                  </a>
+                  <ul class="dropdown-menu dropdown-user animated fadeIn">
+                    <div class="dropdown-user-scroll scrollbar-outer">
+                      <li>
+                        <div class="user-box">
+                          <div class="avatar-lg d-flex align-items-center justify-content-center bg-primary rounded" style="width:60px;height:60px;">
+                            <span class="text-white fw-bold" style="font-size:22px;">
+                              {% if request.user.is_authenticated %}{{ request.user.username|slice:":2"|upper }}{% else %}ST{% endif %}
+                            </span>
+                          </div>
+                          <div class="u-text">
+                            <h4>{% if request.user.is_authenticated %}{{ request.user.get_full_name|default:request.user.username|capfirst }}{% else %}Staff Member{% endif %}</h4>
+                            <p class="text-muted">{% if request.user.email %}{{ request.user.email }}{% else %}staff@carepoint.hospital{% endif %}</p>
+                            <a
+                              href="/admin/"
+                              class="btn btn-xs btn-secondary btn-sm"
+                              >Django Admin</a
+                            >
+                          </div>
+                        </div>
+                      </li>
+                      <li>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" href="{% url 'HOME' %}">Dashboard</a>
+                        <a class="dropdown-item" href="{% url 'records' 'patients' %}">Patients</a>
+                        <a class="dropdown-item" href="{% url 'records' 'bills' %}">Billing</a>
+                        <div class="dropdown-divider"></div>
+                        {% if request.user.is_authenticated %}
+                          <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt me-1"></i> Logout
+                          </a>
+                        {% else %}
+                          <a class="dropdown-item" href="{% url 'login' %}">
+                            <i class="fas fa-sign-in-alt me-1"></i> Login
+                          </a>
+                          <a class="dropdown-item" href="{% url 'signup' %}">
+                            <i class="fas fa-user-plus me-1"></i> Sign Up
+                          </a>
+                        {% endif %}
+                      </li>
+                    </div>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+          </nav>
+          <!-- End Navbar -->
+        </div>
+
+        <div class="container">
+          <div class="page-inner">
+            {% if messages %}
+              <div class="row">
+                <div class="col-12">
+                  {% for message in messages %}
+                    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}success{% endif %} alert-dismissible fade show" role="alert">
+                      {{ message }}
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+          </div>
+        </div>
+
+        <footer class="footer">
+          <div class="container-fluid d-flex justify-content-between">
+            <nav class="pull-left">
+              <ul class="nav">
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'HOME' %}">
+                    CarePoint
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'records' 'patients' %}"> Patients </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="/admin/"> Admin </a>
+                </li>
+              </ul>
+            </nav>
+            <div class="copyright">
+              &copy; {% now "Y" %} CarePoint Hospital Management System
+            </div>
+            <div>
+              Hospital Information System
+            </div>
+          </div>
+        </footer>
+      </div>
+
+      <!-- Custom template settings switcher -->
+      <div class="custom-template">
+        <div class="title">Settings</div>
+        <div class="custom-content">
+          <div class="switcher">
+            <div class="switch-block">
+              <h4>Sidebar</h4>
+              <div class="btnSwitch">
+                <button
+                  type="button"
+                  class="changeSideBarColor"
+                  data-color="white"
+                ></button>
+                <button
+                  type="button"
+                  class="selected changeSideBarColor"
+                  data-color="dark"
+                ></button>
+                <button
+                  type="button"
+                  class="changeSideBarColor"
+                  data-color="dark2"
+                ></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="custom-toggle">
+          <i class="icon-settings"></i>
+        </div>
+      </div>
+      <!-- End Custom template -->
+    </div>
+
+    <!-- Core JS Files -->
+    <script src="{% static 'assets/js/core/jquery-3.7.1.min.js' %}"></script>
+    <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+    <script src="{% static 'assets/js/core/bootstrap.min.js' %}"></script>
+
+    <!-- jQuery Scrollbar -->
+    <script src="{% static 'assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js' %}"></script>
+
+    <!-- Chart JS -->
+    <script src="{% static 'assets/js/plugin/chart.js/chart.min.js' %}"></script>
+
+    <!-- jQuery Sparkline -->
+    <script src="{% static 'assets/js/plugin/jquery.sparkline/jquery.sparkline.min.js' %}"></script>
+
+    <!-- Chart Circle -->
+    <script src="{% static 'assets/js/plugin/chart-circle/circles.min.js' %}"></script>
+
+    <!-- Datatables -->
+    <script src="{% static 'assets/js/plugin/datatables/datatables.min.js' %}"></script>
+
+    <!-- Bootstrap Notify -->
+    <script src="{% static 'assets/js/plugin/bootstrap-notify/bootstrap-notify.min.js' %}"></script>
+
+    <!-- jQuery Vector Maps -->
+    <script src="{% static 'assets/js/plugin/jsvectormap/jsvectormap.min.js' %}"></script>
+    <script src="{% static 'assets/js/plugin/jsvectormap/world.js' %}"></script>
+
+    <!-- Sweet Alert -->
+    <script src="{% static 'assets/js/plugin/sweetalert/sweetalert.min.js' %}"></script>
+
+    <!-- Core App JS -->
+    <script src="{% static 'assets/js/kaiadmin.min.js' %}"></script>
+
+    <!-- Settings Demo methods -->
+    <script src="{% static 'assets/js/setting-demo.js' %}"></script>
+    {% block page_scripts %}{% endblock %}
+
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

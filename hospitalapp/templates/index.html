@@ -1,0 +1,503 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard | CarePoint Hospital Management{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
+  <div>
+    <h3 class="fw-bold mb-3">Hospital Dashboard</h3>
+    <h6 class="op-7 mb-2">CarePoint - Bootstrap 5 Hospital Management System</h6>
+  </div>
+  <div class="ms-md-auto py-2 py-md-0">
+    <a href="{% url 'records' 'patients' %}" class="btn btn-label-info btn-round me-2">Manage Patients</a>
+    <a href="{% url 'record_create' 'patients' %}" class="btn btn-primary btn-round">Add Patient</a>
+  </div>
+</div>
+
+<!-- 4 Key Stat Cards -->
+<div class="row">
+  <div class="col-sm-6 col-md-3">
+    <div class="card card-stats card-round">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-icon">
+            <div class="icon-big text-center icon-primary bubble-shadow-small">
+              <i class="fas fa-users"></i>
+            </div>
+          </div>
+          <div class="col col-stats ms-3 ms-sm-0">
+            <div class="numbers">
+              <p class="card-category">Total Patients</p>
+              <h4 class="card-title">{{ patient_count|default:"0" }}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-md-3">
+    <div class="card card-stats card-round">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-icon">
+            <div class="icon-big text-center icon-info bubble-shadow-small">
+              <i class="fas fa-user-md"></i>
+            </div>
+          </div>
+          <div class="col col-stats ms-3 ms-sm-0">
+            <div class="numbers">
+              <p class="card-category">Active Doctors</p>
+              <h4 class="card-title">{{ doctor_count|default:"0" }}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-md-3">
+    <div class="card card-stats card-round">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-icon">
+            <div class="icon-big text-center icon-success bubble-shadow-small">
+              <i class="fas fa-calendar-check"></i>
+            </div>
+          </div>
+          <div class="col col-stats ms-3 ms-sm-0">
+            <div class="numbers">
+              <p class="card-category">Appointments</p>
+              <h4 class="card-title">{{ appointment_count|default:"0" }}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-md-3">
+    <div class="card card-stats card-round">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-icon">
+            <div class="icon-big text-center icon-secondary bubble-shadow-small">
+              <i class="fas fa-file-invoice-dollar"></i>
+            </div>
+          </div>
+          <div class="col col-stats ms-3 ms-sm-0">
+            <div class="numbers">
+              <p class="card-category">Revenue</p>
+              <h4 class="card-title">${{ total_revenue|default:"0" }}</h4>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Section -->
+<div class="row">
+  <div class="col-md-8">
+    <div class="card card-round">
+      <div class="card-header">
+        <div class="card-head-row">
+          <div class="card-title">Patient Admissions &amp; Visits Statistics</div>
+          <div class="card-tools">
+            <a href="#" class="btn btn-label-success btn-round btn-sm me-2">
+              <span class="btn-label"><i class="fa fa-pencil"></i></span> Export
+            </a>
+            <a href="#" class="btn btn-label-info btn-round btn-sm">
+              <span class="btn-label"><i class="fa fa-print"></i></span> Print
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="chart-container" style="min-height: 375px">
+          <canvas id="statisticsChart"></canvas>
+        </div>
+        <div id="myChartLegend"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card card-primary card-round">
+      <div class="card-header">
+        <div class="card-head-row">
+          <div class="card-title">Daily Hospital Revenue</div>
+          <div class="card-tools">
+            <div class="dropdown">
+              <button
+                class="btn btn-sm btn-label-light dropdown-toggle"
+                type="button"
+                id="dropdownMenuButton"
+                data-bs-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                Export
+              </button>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="#">Download CSV</a>
+                <a class="dropdown-item" href="#">Print Statement</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-category">Current Billing Cycle</div>
+      </div>
+      <div class="card-body pb-0">
+        <div class="mb-4 mt-2">
+          <h1>${{ total_revenue|default:"4,578.58" }}</h1>
+        </div>
+        <div class="pull-in">
+          <canvas id="dailySalesChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="card card-round">
+      <div class="card-body pb-0">
+        <div class="h1 fw-bold float-end text-primary">+12%</div>
+        <h2 class="mb-2">{{ admission_count|default:"17" }}</h2>
+        <p class="text-muted">Active Inpatient Admissions</p>
+        <div class="pull-in sparkline-fix">
+          <div id="lineChart"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Recent Patients & Transaction History -->
+<div class="row">
+  <div class="col-md-4">
+    <div class="card card-round">
+      <div class="card-body">
+        <div class="card-head-row card-tools-still-right">
+          <div class="card-title">Recent Patients</div>
+          <div class="card-tools">
+            <div class="dropdown">
+              <button
+                class="btn btn-icon btn-clean me-0"
+                type="button"
+                id="patientDropdownMenu"
+                data-bs-toggle="dropdown"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                <i class="fas fa-ellipsis-h"></i>
+              </button>
+              <div class="dropdown-menu" aria-labelledby="patientDropdownMenu">
+                <a class="dropdown-item" href="{% url 'records' 'patients' %}">View All Patients</a>
+                <a class="dropdown-item" href="{% url 'record_create' 'patients' %}">Add New Patient</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-list py-4">
+          {% if recent_patients %}
+            {% for patient in recent_patients %}
+              <div class="item-list">
+                <div class="avatar">
+                  <span class="avatar-title rounded-circle border border-white bg-primary">
+                    {{ patient.name|slice:":2"|upper }}
+                  </span>
+                </div>
+                <div class="info-user ms-3">
+                  <div class="username"><a href="{% url 'record_update' 'patients' patient.pk %}" class="text-dark">{{ patient.name|capfirst }}</a></div>
+                  <div class="status text-muted">{{ patient.condition|default:"General Checkup" }}</div>
+                </div>
+                <a href="{% url 'record_update' 'patients' patient.pk %}" class="btn btn-icon btn-link op-8 me-1" title="Edit Record">
+                  <i class="far fa-edit"></i>
+                </a>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="item-list">
+              <div class="avatar">
+                <img src="{% static 'assets/img/jm_denis.jpg' %}" alt="..." class="avatar-img rounded-circle" />
+              </div>
+              <div class="info-user ms-3">
+                <div class="username">Jimmy Denis</div>
+                <div class="status">Graphic Designer</div>
+              </div>
+              <button class="btn btn-icon btn-link op-8 me-1"><i class="far fa-envelope"></i></button>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-8">
+    <div class="card card-round">
+      <div class="card-header">
+        <div class="card-head-row card-tools-still-right">
+          <div class="card-title">Transaction &amp; Billing History</div>
+          <div class="card-tools">
+            <a href="{% url 'records' 'payments' %}" class="btn btn-sm btn-label-primary btn-round">View All Payments</a>
+          </div>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table align-items-center mb-0">
+            <thead class="thead-light">
+              <tr>
+                <th scope="col">Payment Reference</th>
+                <th scope="col" class="text-end">Date &amp; Time</th>
+                <th scope="col" class="text-end">Amount</th>
+                <th scope="col" class="text-end">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if recent_payments %}
+                {% for payment in recent_payments %}
+                  <tr>
+                    <th scope="row">
+                      <button class="btn btn-icon btn-round btn-success btn-sm me-2">
+                        <i class="fa fa-check"></i>
+                      </button>
+                      Payment #{{ payment.pk }} - {{ payment.bill.patient.name|default:"Patient"|capfirst }}
+                    </th>
+                    <td class="text-end">{{ payment.paid_at|date:"M d, Y, g:i A" }}</td>
+                    <td class="text-end fw-bold">${{ payment.amount }}</td>
+                    <td class="text-end">
+                      <span class="badge badge-success">Completed</span>
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <th scope="row">
+                    <button class="btn btn-icon btn-round btn-success btn-sm me-2">
+                      <i class="fa fa-check"></i>
+                    </button>
+                    Payment from #10231
+                  </th>
+                  <td class="text-end">Mar 19, 2024, 2:45 PM</td>
+                  <td class="text-end">$250.00</td>
+                  <td class="text-end">
+                    <span class="badge badge-success">Completed</span>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">
+                    <button class="btn btn-icon btn-round btn-success btn-sm me-2">
+                      <i class="fa fa-check"></i>
+                    </button>
+                    Payment from #10232
+                  </th>
+                  <td class="text-end">Mar 19, 2024, 4:15 PM</td>
+                  <td class="text-end">$380.00</td>
+                  <td class="text-end">
+                    <span class="badge badge-success">Completed</span>
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  $(document).ready(function() {
+    // Active Inpatient Admissions Sparkline
+    if ($("#lineChart").length) {
+      $("#lineChart").sparkline([102, 109, 120, 99, 110, 105, 115], {
+        type: "line",
+        height: "70",
+        width: "100%",
+        lineWidth: "2",
+        lineColor: "#177dff",
+        fillColor: "rgba(23, 125, 255, 0.14)",
+      });
+    }
+
+    // Patient Admissions & Visits Statistics Chart
+    var statCanvas = document.getElementById('statisticsChart');
+    if (statCanvas) {
+      var ctx = statCanvas.getContext('2d');
+      var statisticsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+          datasets: [
+            {
+              label: "Inpatients",
+              borderColor: '#f3545d',
+              pointBackgroundColor: 'rgba(243, 84, 93, 0.6)',
+              pointRadius: 0,
+              backgroundColor: 'rgba(243, 84, 93, 0.4)',
+              legendColor: '#f3545d',
+              fill: true,
+              borderWidth: 2,
+              data: [154, 184, 175, 203, 210, 231, 240, 278, 252, 312, 320, 374]
+            },
+            {
+              label: "Outpatients",
+              borderColor: '#fdaf4b',
+              pointBackgroundColor: 'rgba(253, 175, 75, 0.6)',
+              pointRadius: 0,
+              backgroundColor: 'rgba(253, 175, 75, 0.4)',
+              legendColor: '#fdaf4b',
+              fill: true,
+              borderWidth: 2,
+              data: [256, 230, 245, 287, 240, 250, 230, 295, 331, 431, 456, 521]
+            },
+            {
+              label: "Appointments",
+              borderColor: '#177dff',
+              pointBackgroundColor: 'rgba(23, 125, 255, 0.6)',
+              pointRadius: 0,
+              backgroundColor: 'rgba(23, 125, 255, 0.4)',
+              legendColor: '#177dff',
+              fill: true,
+              borderWidth: 2,
+              data: [542, 480, 430, 550, 530, 453, 380, 434, 568, 610, 700, 900]
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          legend: {
+            display: false
+          },
+          tooltips: {
+            bodySpacing: 4,
+            mode: "nearest",
+            intersect: 0,
+            position: "nearest",
+            xPadding: 10,
+            yPadding: 10,
+            caretPadding: 10
+          },
+          layout: {
+            padding: { left: 5, right: 5, top: 15, bottom: 15 }
+          },
+          scales: {
+            yAxes: [{
+              ticks: {
+                fontStyle: "500",
+                beginAtZero: false,
+                maxTicksLimit: 5,
+                padding: 10
+              },
+              gridLines: {
+                drawTicks: false,
+                display: false
+              }
+            }],
+            xAxes: [{
+              gridLines: {
+                zeroLineColor: "transparent"
+              },
+              ticks: {
+                padding: 10,
+                fontStyle: "500"
+              }
+            }]
+          },
+          legendCallback: function(chart) {
+            var text = [];
+            text.push('<ul class="' + chart.id + '-legend html-legend">');
+            for (var i = 0; i < chart.data.datasets.length; i++) {
+              text.push('<li><span style="background-color:' + chart.data.datasets[i].legendColor + '"></span>');
+              if (chart.data.datasets[i].label) {
+                text.push(chart.data.datasets[i].label);
+              }
+              text.push('</li>');
+            }
+            text.push('</ul>');
+            return text.join('');
+          }
+        }
+      });
+
+      var myLegendContainer = document.getElementById("myChartLegend");
+      if (myLegendContainer && typeof statisticsChart.generateLegend === 'function') {
+        myLegendContainer.innerHTML = statisticsChart.generateLegend();
+        var legendItems = myLegendContainer.getElementsByTagName('li');
+        if (typeof legendClickCallback === 'function') {
+          for (var i = 0; i < legendItems.length; i += 1) {
+            legendItems[i].addEventListener("click", legendClickCallback, false);
+          }
+        }
+      }
+    }
+
+    // Daily Hospital Revenue Chart
+    var salesCanvas = document.getElementById('dailySalesChart');
+    if (salesCanvas) {
+      var dailySalesChartCtx = salesCanvas.getContext('2d');
+      var myDailySalesChart = new Chart(dailySalesChartCtx, {
+        type: 'line',
+        data: {
+          labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"],
+          datasets: [{
+            label: "Daily Revenue ($)",
+            fill: true,
+            backgroundColor: "rgba(255, 255, 255, 0.2)",
+            borderColor: "#fff",
+            borderCapStyle: "butt",
+            pointBorderColor: "#fff",
+            pointBackgroundColor: "#fff",
+            pointBorderWidth: 1,
+            pointHoverRadius: 5,
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "#fff",
+            pointHoverBorderWidth: 1,
+            pointRadius: 1,
+            pointHitRadius: 5,
+            data: [65, 59, 80, 81, 56, 55, 40, 35, 30]
+          }]
+        },
+        options: {
+          maintainAspectRatio: false,
+          legend: {
+            display: false
+          },
+          animation: {
+            easing: "easeInOutBack"
+          },
+          scales: {
+            yAxes: [{
+              display: false,
+              ticks: {
+                fontColor: "rgba(0,0,0,0.5)",
+                fontStyle: "bold",
+                beginAtZero: true,
+                maxTicksLimit: 10,
+                padding: 0
+              },
+              gridLines: {
+                drawTicks: false,
+                display: false
+              }
+            }],
+            xAxes: [{
+              display: false,
+              gridLines: {
+                zeroLineColor: "transparent"
+              },
+              ticks: {
+                padding: -20,
+                fontColor: "rgba(255,255,255,0.2)",
+                fontStyle: "bold"
+              }
+            }]
+          }
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

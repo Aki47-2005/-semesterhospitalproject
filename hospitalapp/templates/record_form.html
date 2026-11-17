@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{% if record %}Edit{% else %}Add{% endif %} {{ title }} | CarePoint{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
+  <div>
+    <h3 class="fw-bold mb-1">{% if record %}Edit{% else %}Create New{% endif %} {{ title }}</h3>
+    <h6 class="op-7 mb-2">Hospital Information System &bull; Enter the details below</h6>
+  </div>
+  <div class="ms-md-auto py-2 py-md-0">
+    <a class="btn btn-label-secondary btn-round" href="{% url 'records' kind %}">
+      <i class="fa fa-arrow-left me-1"></i> Back to {{ title }}
+    </a>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-8 col-lg-7">
+    <div class="card card-round">
+      <div class="card-header">
+        <div class="card-title">{{ title }} Form</div>
+      </div>
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+          
+          {% for field in form %}
+            <div class="mb-3">
+              <label class="form-label fw-bold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              <div>
+                {{ field }}
+              </div>
+              {% if field.help_text %}
+                <small class="form-text text-muted">{{ field.help_text }}</small>
+              {% endif %}
+              {% if field.errors %}
+                <div class="text-danger small mt-1">{{ field.errors }}</div>
+              {% endif %}
+            </div>
+          {% endfor %}
+
+          <div class="d-flex align-items-center gap-2 mt-4">
+            <button class="btn btn-primary btn-round" type="submit">
+              <i class="fa fa-check me-1"></i> Save {{ title }}
+            </button>
+            <a class="btn btn-label-secondary btn-round" href="{% url 'records' kind %}">
+              Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  form input[type="text"],
+  form input[type="email"],
+  form input[type="number"],
+  form input[type="date"],
+  form input[type="datetime-local"],
+  form select,
+  form textarea {
+    display: block;
+    width: 100%;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.95rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ebedf2;
+    border-radius: 4px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  }
+  form input:focus,
+  form select:focus,
+  form textarea:focus {
+    color: #495057;
+    background-color: #fff;
+    border-color: #1572e8;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(21, 114, 232, 0.25);
+  }
+</style>
+{% endblock %}
